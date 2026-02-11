@@ -89,7 +89,12 @@ const navigateTo = (path) => {
       </div>
 
       <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-        <div v-for="i in 3" :key="i" class="min-w-[200px] bg-white rounded-2xl p-3 border border-gray-100 shadow-sm">
+        <div 
+          v-for="i in 3" 
+          :key="i" 
+          class="min-w-[200px] bg-white rounded-2xl p-3 border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all active:scale-95"
+          @click="router.push({ path: '/production', query: { mode: 'juice', fruitCount: 3 } })"
+        >
           <div class="h-32 bg-gray-100 rounded-xl mb-3 overflow-hidden relative">
             <img :src="`https://placehold.co/400x300?text=Fruit+${i}`" class="w-full h-full object-cover" />
             <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-bold text-orange-500 flex items-center gap-1">

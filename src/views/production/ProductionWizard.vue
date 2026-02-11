@@ -1,3 +1,24 @@
+<script setup>
+import { onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useProductionStore } from '@/stores/production'
+
+const router = useRouter()
+const route = useRoute()
+const store = useProductionStore()
+
+onMounted(() => {
+  if (route.query.mode) {
+    store.setMode(route.query.mode)
+    if (route.query.fruitCount) {
+      store.setFruitCount(parseInt(route.query.fruitCount))
+    }
+    // Skip to scheme if mode is provided, simulating a "Quick Start"
+    router.replace({ name: 'production-scheme' })
+  }
+})
+</script>
+
 <template>
   <div class="min-h-[calc(100vh-160px)] md:min-h-screen">
     <!-- Mobile Header Override -->

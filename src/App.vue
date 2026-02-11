@@ -1,10 +1,27 @@
 <script setup>
 import { computed } from 'vue'
+
 import { useRouter, useRoute } from 'vue-router'
+import { useProductionStore } from '@/stores/production'
+import { useAuthStore } from '@/stores/auth'
 import { Home, Play, BookOpen, MessageCircle, User } from 'lucide-vue-next'
 
 const router = useRouter()
-const route = useRoute()
+const route = useRoute() 
+const store = useProductionStore()
+const authStore = useAuthStore()
+
+// Auto-start logic from Home page recommendations
+if (route.query.mode) {
+  // Simple "jump start" simulation
+  setTimeout(() => {
+    store.setMode(route.query.mode)
+    if (route.query.fruitCount) {
+        store.setFruitCount(parseInt(route.query.fruitCount))
+    }
+    router.replace({ name: 'production-scheme' }) // Jump to scheme selection
+  }, 100)
+}
 
 // Bottom Navigation items
 const navItems = [
@@ -31,15 +48,20 @@ const showBottomNav = computed(() => {
         </div>
         <span class="text-xl font-heading font-bold text-fresh-green-800">智果大师</span>
       </div>
-      <nav class="flex items-center gap-6">
-        <router-link to="/" class="hover:text-fresh-green-600 transition-colors">主页</router-link>
-        <router-link to="/production" class="hover:text-fresh-green-600 transition-colors">开始制作</router-link>
-        <router-link to="/nutrition" class="hover:text-fresh-green-600 transition-colors">营养科普</router-link>
-        <router-link to="/community" class="hover:text-fresh-green-600 transition-colors">果汁社区</router-link>
+      
+      <!-- Center Nav -->
+      <nav class="flex items-center gap-8">
+        <router-link to="/" class="font-bold text-fresh-green-800 hover:text-fresh-green-600 transition-colors">主页</router-link>
+        <router-link to="/production" class="text-gray-500 hover:text-fresh-green-600 transition-colors">开始制作</router-link>
+        <router-link to="/community" class="text-gray-500 hover:text-fresh-green-600 transition-colors">果汁社区</router-link>
       </nav>
+
+      <!-- User Profile (Reference Style) -->
       <div class="flex items-center gap-4">
-        <span class="text-sm text-gray-500">欢迎, 用户</span>
-        <div class="w-8 h-8 rounded-full bg-gray-200"></div>
+        <span class="text-lg text-gray-500">欢迎, <span class="text-gray-700 font-bold">{{ authStore.userProfile.name }}</span></span>
+        <div class="w-12 h-12 rounded-full bg-gray-200 border-2 border-white shadow-sm overflow-hidden">
+           <img :src="authStore.userProfile.avatar" class="w-full h-full object-cover" />
+        </div>
       </div>
     </header>
 
