@@ -12,6 +12,7 @@ const navItems = [
   { name: '制作', path: '/production', icon: Play },
   { name: '科普', path: '/nutrition', icon: BookOpen },
   { name: '社区', path: '/community', icon: MessageCircle },
+  { name: '我的', path: '/profile', icon: User },
 ]
 
 const showBottomNav = computed(() => {
