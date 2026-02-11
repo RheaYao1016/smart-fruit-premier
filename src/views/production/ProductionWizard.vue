@@ -1,60 +1,48 @@
-<script setup>
-import { onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { useProductionStore } from '@/stores/production'
+﻿<script setup>
+import { computed, ref } from 'vue'
+import Step1Placement from '@/views/production/steps/Step1Placement.vue'
+import Step2Preprocess from '@/views/production/steps/Step2Preprocess.vue'
+import Step3Scheme from '@/views/production/steps/Step3Scheme.vue'
+import Step4Monitor from '@/views/production/steps/Step4Monitor.vue'
+import Step5Complete from '@/views/production/steps/Step5Complete.vue'
 
-const router = useRouter()
-const route = useRoute()
-const store = useProductionStore()
+const currentStep = ref(1)
 
-onMounted(() => {
-  if (route.query.mode) {
-    store.setMode(route.query.mode)
-    if (route.query.fruitCount) {
-      store.setFruitCount(parseInt(route.query.fruitCount))
-    }
-    // Skip to scheme if mode is provided, simulating a "Quick Start"
-    router.replace({ name: 'production-scheme' })
-  }
-})
+const components = {
+  1: Step1Placement,
+  2: Step2Preprocess,
+  3: Step3Scheme,
+  4: Step4Monitor,
+  5: Step5Complete
+}
+
+const stepLabels = ['水果安放', '预处理', '方案选择', '制作监控', '完成']
+
+const currentComponent = computed(() => components[currentStep.value])
+
+function next() {
+  if (currentStep.value < 5) currentStep.value += 1
+}
+
+function back() {
+  if (currentStep.value > 1) currentStep.value -= 1
+}
+
+function restart() {
+  currentStep.value = 1
+}
 </script>
 
 <template>
-  <div class="min-h-[calc(100vh-160px)] md:min-h-screen">
-    <!-- Mobile Header Override -->
-    <div class="md:hidden flex items-center justify-between px-6 py-4 mb-4">
-      <button @click="$router.push('/')" class="text-dark-text font-bold text-sm">
-        取消
-      </button>
-      <h1 class="text-lg font-bold text-dark-text">制作流程</h1>
-      <div class="w-8"></div> <!-- Spacer -->
+  <div class="space-y-4">
+    <div class="card p-3">
+      <div class="grid grid-cols-5 gap-1 text-center text-[11px]">
+        <div v-for="(item, idx) in stepLabels" :key="item" class="rounded-xl px-1 py-2" :class="idx + 1 <= currentStep ? 'bg-amber-500 text-white' : 'bg-stone-100 text-stone-500'">
+          {{ idx + 1 }}.{{ item }}
+        </div>
+      </div>
     </div>
 
-    <!-- Desktop Header (kept but simplified) -->
-    <div class="hidden md:flex justify-between items-center mb-8">
-      <h1 class="text-2xl font-bold text-fresh-green-600">智能制作流程</h1>
-      <button @click="$router.push('/')" class="text-gray-400 hover:text-dark-text transition-colors">退出</button>
-    </div>
-
-    <!-- Content Area -->
-    <div class="bg-white md:bg-white/80 md:backdrop-blur-xl rounded-t-[2rem] md:rounded-3xl p-6 md:p-8 shadow-none md:shadow-xl md:border border-gray-100 min-h-[600px] relative transition-all">
-      <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-    </div>
+    <component :is="currentComponent" @next="next" @back="back" @restart="restart" />
   </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

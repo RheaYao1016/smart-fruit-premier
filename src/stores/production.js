@@ -1,61 +1,100 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+﻿import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
+import { STORAGE_KEYS } from '@/constants/storageKeys'
+import { localDb } from '@/services/localDb'
+import { ASSETS } from '@/constants/assets'
+
+function defaultDraft() {
+  return {
+    fruitCount: 1,
+    fruits: [{ id: 1, pitting: false, peeling: false, cutting: true }],
+    mode: '',
+    bladeVideo: '',
+    settings: {
+      texture: '微渣口感',
+      temperature: '常温',
+      sweetnessType: '自定义',
+      sweetnessValue: 35,
+      cannedTemperature: '常温',
+      cannedSweetness: 20
+    }
+  }
+}
 
 export const useProductionStore = defineStore('production', () => {
-    // State
-    const fruitCount = ref(1)
-    const fruits = ref([]) // Array of objects: { id: 1, settings: { pitting: false, peeling: false, cutting: true } }
-    const selectedMode = ref(null) // 'juice', 'canned', 'cut'
-    const processingSettings = ref({
-        temperature: 'room', // cold, room, hot
-        sweetness: 'custom', // custom, health
-        sweetnessLevel: 50, // 0-100
-        filter: 'medium' // no-residue, medium, high-fiber
+  const draft = ref(defaultDraft())
+  const history = ref(localDb.get(STORAGE_KEYS.productionHistory, []))
+
+  const modeLabel = computed(() => {
+    if (draft.value.mode === 'juice') return '果汁'
+    if (draft.value.mode === 'canned') return '罐头'
+    if (draft.value.mode === 'cut') return '果切'
+    return '-'
+  })
+
+  function persistHistory() {
+    localDb.set(STORAGE_KEYS.productionHistory, history.value)
+  }
+
+  function resetDraft() {
+    draft.value = defaultDraft()
+  }
+
+  function setFruitCount(count) {
+    const safeCount = Math.min(6, Math.max(1, Number(count || 1)))
+    draft.value.fruitCount = safeCount
+    draft.value.fruits = Array.from({ length: safeCount }, (_, index) => ({
+      id: index + 1,
+      pitting: false,
+      peeling: false,
+      cutting: true
+    }))
+  }
+
+  function updateFruit(index, payload) {
+    if (!draft.value.fruits[index]) return
+    draft.value.fruits[index] = {
+      ...draft.value.fruits[index],
+      ...payload,
+      cutting: true
+    }
+  }
+
+  function setMode(mode) {
+    draft.value.mode = mode
+    draft.value.bladeVideo = ASSETS.bladeVideos[mode] || ''
+  }
+
+  function updateSettings(payload) {
+    draft.value.settings = {
+      ...draft.value.settings,
+      ...payload
+    }
+  }
+
+  function addHistoryRecord(record) {
+    history.value.unshift({
+      id: `h_${Date.now()}_${Math.random().toString(16).slice(2, 6)}`,
+      ...record,
+      createdAt: new Date().toISOString()
     })
+    persistHistory()
+  }
 
-    // Actions
-    function setFruitCount(count) {
-        fruitCount.value = count
-        // Initialize fruits array based on count
-        fruits.value = Array.from({ length: count }, (_, i) => ({
-            id: i + 1,
-            settings: {
-                pitting: false,
-                peeling: false,
-                cutting: true // Always true by default/requirement
-            }
-        }))
-    }
+  function getHistoryByUser(userId) {
+    return history.value.filter((item) => item.userId === userId)
+  }
 
-    function updateFruitSetting(index, setting, value) {
-        if (fruits.value[index]) {
-            fruits.value[index].settings[setting] = value
-        }
-    }
-
-    function setMode(mode) {
-        selectedMode.value = mode
-    }
-
-    function resetProduction() {
-        fruitCount.value = 1
-        fruits.value = []
-        selectedMode.value = null
-        processingSettings.value = {
-            temperature: 'room',
-            sweetness: 'custom',
-            sweetnessLevel: 50,
-        }
-    }
-
-    return {
-        fruitCount,
-        fruits,
-        selectedMode,
-        processingSettings,
-        setFruitCount,
-        updateFruitSetting,
-        setMode,
-        resetProduction
-    }
+  return {
+    draft,
+    history,
+    modeLabel,
+    resetDraft,
+    setFruitCount,
+    updateFruit,
+    setMode,
+    updateSettings,
+    addHistoryRecord,
+    getHistoryByUser
+  }
 })

@@ -1,126 +1,99 @@
-<script setup>
+﻿<script setup>
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Play, BookOpen, MessageCircle, ChevronRight, Star } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth'
+import { useCommunityStore } from '@/stores/community'
+import { useProductionStore } from '@/stores/production'
+import { ASSETS } from '@/constants/assets'
+import { fromNow } from '@/utils/datetime'
 
 const router = useRouter()
+const authStore = useAuthStore()
+const communityStore = useCommunityStore()
+const productionStore = useProductionStore()
 
-const features = [
-  { 
-    id: 'production',
-    name: '开始制作', 
-    desc: '打造您的专属鲜果饮品',
-    icon: Play, 
-    color: 'bg-fresh-green-100 text-fresh-green-600',
-    path: '/production'
-  },
-  { 
-    id: 'nutrition',
-    name: '营养科普', 
-    desc: '探索每一口健康的奥秘',
-    icon: BookOpen, 
-    color: 'bg-warm-orange-100 text-warm-orange-600',
-    path: '/nutrition'
-  },
-  { 
-    id: 'community',
-    name: '果汁社区', 
-    desc: '分享您的独家配方',
-    icon: MessageCircle, 
-    color: 'bg-purple-100 text-purple-600',
-    path: '/community'
-  }
+const quickCards = [
+  { title: '开始制作', desc: '进入 5 步制作向导', path: '/production' },
+  { title: '营养科普', desc: '查看水果配比与温度建议', path: '/nutrition' },
+  { title: '果汁社区', desc: '发布图文并互动', path: '/community' }
 ]
 
-const navigateTo = (path) => {
-  router.push(path)
+const feed = computed(() => communityStore.queryPosts({
+  userId: authStore.currentUser?.id,
+  role: authStore.role,
+  page: 1,
+  pageSize: 3,
+  sort: 'hot'
+}).items)
+
+const myHistory = computed(() => productionStore.getHistoryByUser(authStore.currentUser?.id).slice(0, 2))
+
+function startQuick(mode) {
+  productionStore.resetDraft()
+  productionStore.setMode(mode)
+  router.push('/production')
 }
 </script>
 
 <template>
-  <div class="space-y-8">
-    <!-- Hero Banner -->
-    <div class="relative h-64 md:h-80 rounded-3xl overflow-hidden shadow-2xl shadow-fresh-green-900/10 mx-4 md:mx-0 group">
-      <img 
-        src="https://placehold.co/1200x600?text=Fresh+Organic+Fruits" 
-        alt="Banner" 
-        class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-      />
-      <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8">
-        <h2 class="text-3xl font-heading font-bold text-white mb-2">自然鲜果，健康生活</h2>
-        <p class="text-gray-100/90 text-sm md:text-base max-w-md">
-          精选当季鲜果，智能设备一键制作，还原自然本味。
-        </p>
-        <button class="mt-4 w-fit px-6 py-2 bg-white text-fresh-green-700 font-bold rounded-full text-sm hover:bg-fresh-green-50 transition-colors">
-          立即体验
-        </button>
-      </div>
-    </div>
-
-    <!-- Feature Grid -->
-    <div class="px-4 md:px-0">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl font-bold text-dark-text">核心功能</h3>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button
-          v-for="feature in features"
-          :key="feature.id"
-          @click="navigateTo(feature.path)"
-          class="flex items-center p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all active:scale-95 text-left group"
-        >
-          <div :class="`w-12 h-12 rounded-xl ${feature.color} flex items-center justify-center mr-4 group-hover:scale-110 transition-transform`">
-            <component :is="feature.icon" class="w-6 h-6 fill-current" />
-          </div>
-          <div class="flex-1">
-            <h4 class="font-bold text-dark-text">{{ feature.name }}</h4>
-            <p class="text-xs text-gray-500">{{ feature.desc }}</p>
-          </div>
-          <ChevronRight class="w-5 h-5 text-gray-300" />
-        </button>
-      </div>
-    </div>
-
-    <!-- Recommendations (Mock) -->
-    <div class="px-4 md:px-0 pb-8">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl font-bold text-dark-text">今日推荐</h3>
-        <span class="text-sm text-fresh-green-600 font-medium">查看全部</span>
-      </div>
-
-      <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
-        <div 
-          v-for="i in 3" 
-          :key="i" 
-          class="min-w-[200px] bg-white rounded-2xl p-3 border border-gray-100 shadow-sm cursor-pointer hover:shadow-md transition-all active:scale-95"
-          @click="router.push({ path: '/production', query: { mode: 'juice', fruitCount: 3 } })"
-        >
-          <div class="h-32 bg-gray-100 rounded-xl mb-3 overflow-hidden relative">
-            <img :src="`https://placehold.co/400x300?text=Fruit+${i}`" class="w-full h-full object-cover" />
-            <div class="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-xs font-bold text-orange-500 flex items-center gap-1">
-              <Star class="w-3 h-3 fill-current" /> 4.9
-            </div>
-          </div>
-          <h4 class="font-bold text-sm">元气鲜橙汁组合</h4>
-          <p class="text-xs text-gray-400 mt-1">含丰富维生素C，活力满满</p>
-          <div class="mt-3 flex items-center justify-between">
-            <span class="text-fresh-green-600 font-bold text-sm">¥ 0.00</span>
-            <button class="w-6 h-6 rounded-full bg-fresh-green-50 text-fresh-green-600 flex items-center justify-center">
-              +
-            </button>
-          </div>
+  <div class="space-y-4">
+    <section class="overflow-hidden rounded-3xl border border-amber-100 bg-white shadow">
+      <img :src="ASSETS.homeBanner" class="h-44 w-full object-cover" alt="banner" />
+      <div class="space-y-2 px-4 py-4">
+        <h2 class="text-xl font-bold text-stone-800">智能水果处理专家</h2>
+        <p class="text-sm text-stone-600">一键制作鲜果汁、水果罐头和果切，手机/PWA 直接可用。</p>
+        <div class="grid grid-cols-3 gap-2">
+          <button class="rounded-xl bg-amber-500 px-3 py-2 text-xs font-semibold text-white" @click="startQuick('juice')">果汁</button>
+          <button class="rounded-xl bg-emerald-500 px-3 py-2 text-xs font-semibold text-white" @click="startQuick('canned')">罐头</button>
+          <button class="rounded-xl bg-cyan-500 px-3 py-2 text-xs font-semibold text-white" @click="startQuick('cut')">果切</button>
         </div>
       </div>
-    </div>
+    </section>
+
+    <section class="grid grid-cols-1 gap-3">
+      <button
+        v-for="item in quickCards"
+        :key="item.path"
+        class="card p-4 text-left active:scale-[0.99]"
+        @click="router.push(item.path)"
+      >
+        <p class="text-lg font-semibold text-stone-800">{{ item.title }}</p>
+        <p class="mt-1 text-sm text-stone-500">{{ item.desc }}</p>
+      </button>
+    </section>
+
+    <section class="card p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h3 class="text-base font-semibold">社区热帖</h3>
+        <button class="text-xs text-amber-600" @click="router.push('/community')">查看全部</button>
+      </div>
+      <div v-if="feed.length" class="space-y-3">
+        <button
+          v-for="post in feed"
+          :key="post.id"
+          class="w-full rounded-xl border border-stone-200 p-3 text-left"
+          @click="router.push(`/community/${post.id}`)"
+        >
+          <p class="line-clamp-1 text-sm font-medium text-stone-800">{{ post.title }}</p>
+          <p class="mt-1 line-clamp-1 text-xs text-stone-500">{{ post.content }}</p>
+          <p class="mt-1 text-xs text-stone-400">👍 {{ post.likeCount }} · 💬 {{ post.commentCount }}</p>
+        </button>
+      </div>
+      <p v-else class="text-sm text-stone-400">暂无内容</p>
+    </section>
+
+    <section class="card p-4">
+      <div class="mb-3 flex items-center justify-between">
+        <h3 class="text-base font-semibold">我的最近制作</h3>
+        <button class="text-xs text-amber-600" @click="router.push('/my')">去我的</button>
+      </div>
+      <div v-if="myHistory.length" class="space-y-2">
+        <div v-for="item in myHistory" :key="item.id" class="rounded-xl border border-stone-200 p-3">
+          <p class="text-sm font-medium">{{ item.mode === 'juice' ? '果汁' : item.mode === 'canned' ? '罐头' : '果切' }} · {{ item.fruitCount }} 个水果</p>
+          <p class="text-xs text-stone-500">{{ fromNow(item.createdAt) }}</p>
+        </div>
+      </div>
+      <p v-else class="text-sm text-stone-400">还没有制作记录，去开始制作吧。</p>
+    </section>
   </div>
 </template>
-
-<style scoped>
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-</style>
