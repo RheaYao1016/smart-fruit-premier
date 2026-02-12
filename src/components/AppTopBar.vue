@@ -40,7 +40,7 @@ function logout() {
 
 <template>
   <header class="sticky top-0 z-40 border-b border-white/50 bg-white/90 backdrop-blur px-4 py-3">
-    <div class="mx-auto flex max-w-3xl items-center justify-between">
+    <div class="mx-auto flex w-full max-w-[430px] items-center justify-between">
       <button
         v-if="canBack"
         @click="goBack"

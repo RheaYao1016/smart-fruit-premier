@@ -9,7 +9,7 @@ function defaultDraft() {
     fruitCount: 1,
     fruits: [{ id: 1, pitting: false, peeling: false, cutting: true }],
     mode: '',
-    bladeVideo: '',
+    bladeGuide: '',
     settings: {
       texture: '微渣口感',
       temperature: '常温',
@@ -62,7 +62,7 @@ export const useProductionStore = defineStore('production', () => {
 
   function setMode(mode) {
     draft.value.mode = mode
-    draft.value.bladeVideo = ASSETS.bladeVideos[mode] || ''
+    draft.value.bladeGuide = ASSETS.bladeGuides?.[mode]?.url || ASSETS.bladeVideos[mode] || ''
   }
 
   function updateSettings(payload) {

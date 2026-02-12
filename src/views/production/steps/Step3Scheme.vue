@@ -1,5 +1,6 @@
 ﻿<script setup>
 import { computed, ref } from 'vue'
+import { ImageIcon } from 'lucide-vue-next'
 import { useProductionStore } from '@/stores/production'
 import { ASSETS } from '@/constants/assets'
 
@@ -8,11 +9,22 @@ const store = useProductionStore()
 
 const stage = ref(store.draft.mode ? 'blade' : 'mode')
 const tempMode = ref(store.draft.mode || 'juice')
+const failedGuide = ref(false)
 
 const modeText = computed(() => {
   if (tempMode.value === 'juice') return '果汁'
   if (tempMode.value === 'canned') return '罐头'
   return '果切'
+})
+
+const currentGuide = computed(() => {
+  const guide = ASSETS.bladeGuides?.[tempMode.value]
+  return guide?.url || '/1689125129542740.png'
+})
+
+const guideImageSrc = computed(() => {
+  if (failedGuide.value) return ASSETS.bladeImages[tempMode.value]
+  return currentGuide.value
 })
 
 const temperatures = ['冷饮', '常温', '热饮']
@@ -21,6 +33,7 @@ const textures = ['细腻无渣', '微渣口感', '高纤维']
 function pickMode(mode) {
   tempMode.value = mode
   stage.value = 'blade'
+  failedGuide.value = false
 }
 
 function confirmBlade() {
@@ -34,6 +47,10 @@ function confirmBlade() {
 
 function finishSettings() {
   emit('next')
+}
+
+function onGuideError() {
+  failedGuide.value = true
 }
 </script>
 
@@ -62,7 +79,24 @@ function finishSettings() {
     <section v-else-if="stage === 'blade'" class="card space-y-3 p-4">
       <p class="font-medium">刀头检查（{{ modeText }}）</p>
       <img :src="ASSETS.bladeImages[tempMode]" class="h-44 w-full rounded-xl object-cover" />
-      <a :href="ASSETS.bladeVideos[tempMode]" target="_blank" class="text-sm text-amber-600 underline">查看刀头更换视频（占位链接）</a>
+
+      <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-2">
+        <div class="mb-2 inline-flex items-center gap-2 text-sm font-medium text-amber-700">
+          <ImageIcon class="h-4 w-4" />
+          刀片示意图
+        </div>
+
+        <img :src="guideImageSrc" class="h-32 w-full rounded-lg object-cover" @error="onGuideError" />
+
+        <div class="mt-2 rounded-lg bg-white/80 px-3 py-2 text-xs leading-5 text-stone-600">
+          <p>1. 确认刀片卡槽方向与示意图一致。</p>
+          <p>2. 刀片边缘无裂痕、无明显磨损。</p>
+          <p>3. 旋紧锁扣后再继续下一步。</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-stone-500">当前示意图来源：`/1689125129542740.png`（可在 `public/` 目录替换同名文件）。</p>
+
       <div class="grid grid-cols-2 gap-2">
         <button class="rounded-xl border border-stone-300 px-4 py-2" @click="stage='mode'">重新选方案</button>
         <button class="rounded-xl bg-amber-500 px-4 py-2 font-semibold text-white" @click="confirmBlade">已检查完成</button>

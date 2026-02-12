@@ -17,9 +17,14 @@ export const ASSETS = {
     cut: 'https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=1000&q=80'
   },
   bladeVideos: {
-    juice: 'https://www.youtube.com/watch?v=7TW6A2ZRYwI',
-    canned: 'https://www.youtube.com/watch?v=nY4qf4qLQYc',
-    cut: 'https://www.youtube.com/watch?v=J9fXk6XlJ8Q'
+    juice: '',
+    canned: '',
+    cut: ''
+  },
+  bladeGuides: {
+    juice: { type: 'image', url: '/1689125129542740.png' },
+    canned: { type: 'image', url: '/1689125129542740.png' },
+    cut: { type: 'image', url: '/1689125129542740.png' }
   },
   avatars: [
     'https://randomuser.me/api/portraits/men/32.jpg',

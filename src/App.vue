@@ -12,7 +12,10 @@ const showShell = computed(() => !route.meta.hideShell)
   <div class="min-h-screen bg-app-bg text-stone-800">
     <AppTopBar v-if="showShell" />
 
-    <main :class="showShell ? 'mx-auto max-w-3xl px-3 pb-28 pt-3' : ''">
+    <main
+      class="mx-auto w-full max-w-[430px]"
+      :class="showShell ? 'px-3 pb-28 pt-3' : ''"
+    >
       <router-view v-slot="{ Component }">
         <transition name="page" mode="out-in">
           <component :is="Component" />
