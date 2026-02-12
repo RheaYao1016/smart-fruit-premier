@@ -62,7 +62,7 @@ export const useProductionStore = defineStore('production', () => {
 
   function setMode(mode) {
     draft.value.mode = mode
-    draft.value.bladeGuide = ASSETS.bladeGuides?.[mode]?.url || ASSETS.bladeVideos[mode] || ''
+    draft.value.bladeGuide = ASSETS.bladeGuides?.[mode]?.url || ''
   }
 
   function updateSettings(payload) {

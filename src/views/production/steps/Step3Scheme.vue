@@ -1,5 +1,5 @@
 ﻿<script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { ImageIcon } from 'lucide-vue-next'
 import { useProductionStore } from '@/stores/production'
 import { ASSETS } from '@/constants/assets'
@@ -10,6 +10,10 @@ const store = useProductionStore()
 const stage = ref(store.draft.mode ? 'blade' : 'mode')
 const tempMode = ref(store.draft.mode || 'juice')
 const failedGuide = ref(false)
+const cameraStatus = ref('idle')
+const cameraError = ref('')
+const videoRef = ref(null)
+let cameraStream = null
 
 const modeText = computed(() => {
   if (tempMode.value === 'juice') return '果汁'
@@ -19,7 +23,7 @@ const modeText = computed(() => {
 
 const currentGuide = computed(() => {
   const guide = ASSETS.bladeGuides?.[tempMode.value]
-  return guide?.url || '/1689125129542740.png'
+  return guide?.url || '/刀片图1.png'
 })
 
 const guideImageSrc = computed(() => {
@@ -34,9 +38,11 @@ function pickMode(mode) {
   tempMode.value = mode
   stage.value = 'blade'
   failedGuide.value = false
+  stopCamera()
 }
 
 function confirmBlade() {
+  stopCamera()
   store.setMode(tempMode.value)
   if (tempMode.value === 'cut') {
     emit('next')
@@ -52,6 +58,55 @@ function finishSettings() {
 function onGuideError() {
   failedGuide.value = true
 }
+
+async function openCamera() {
+  cameraError.value = ''
+  cameraStatus.value = 'loading'
+
+  if (!navigator.mediaDevices?.getUserMedia) {
+    cameraStatus.value = 'error'
+    cameraError.value = '当前浏览器不支持摄像头访问。'
+    return
+  }
+
+  try {
+    stopCamera()
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' } },
+      audio: false
+    })
+
+    if (videoRef.value) {
+      videoRef.value.srcObject = cameraStream
+      await videoRef.value.play()
+    }
+    cameraStatus.value = 'active'
+  } catch (error) {
+    cameraStatus.value = 'error'
+    cameraError.value = '摄像头打开失败，请确认权限已允许。'
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach((track) => track.stop())
+    cameraStream = null
+  }
+  if (videoRef.value) {
+    videoRef.value.srcObject = null
+  }
+  if (cameraStatus.value === 'active') {
+    cameraStatus.value = 'idle'
+  }
+}
+
+watch(stage, (value) => {
+  if (value !== 'blade') stopCamera()
+})
+
+onBeforeUnmount(() => {
+  stopCamera()
+})
 </script>
 
 <template>
@@ -78,7 +133,31 @@ function onGuideError() {
 
     <section v-else-if="stage === 'blade'" class="card space-y-3 p-4">
       <p class="font-medium">刀头检查（{{ modeText }}）</p>
-      <img :src="ASSETS.bladeImages[tempMode]" class="h-44 w-full rounded-xl object-cover" />
+
+      <div class="rounded-xl border border-stone-200 bg-stone-50 p-3">
+        <p class="mb-2 text-sm text-stone-600">点击下方按钮打开摄像头，实时查看刀片安装状态。</p>
+        <div class="overflow-hidden rounded-xl bg-stone-900">
+          <video
+            v-if="cameraStatus === 'active'"
+            ref="videoRef"
+            autoplay
+            muted
+            playsinline
+            class="h-44 w-full object-cover"
+          />
+          <div
+            v-else
+            class="flex h-44 w-full items-center justify-center px-4 text-center text-sm text-stone-300"
+          >
+            {{ cameraStatus === 'loading' ? '正在打开摄像头...' : '未开启摄像头，点击按钮开始检查。' }}
+          </div>
+        </div>
+        <p v-if="cameraError" class="mt-2 text-xs text-rose-500">{{ cameraError }}</p>
+        <div class="mt-2 grid grid-cols-2 gap-2">
+          <button class="rounded-xl border border-stone-300 px-3 py-2 text-sm" @click="openCamera">打开摄像头</button>
+          <button class="rounded-xl border border-stone-300 px-3 py-2 text-sm" @click="stopCamera">关闭摄像头</button>
+        </div>
+      </div>
 
       <div class="rounded-xl border border-amber-200 bg-amber-50/50 p-2">
         <div class="mb-2 inline-flex items-center gap-2 text-sm font-medium text-amber-700">
@@ -94,8 +173,6 @@ function onGuideError() {
           <p>3. 旋紧锁扣后再继续下一步。</p>
         </div>
       </div>
-
-      <p class="text-xs text-stone-500">当前示意图来源：`/1689125129542740.png`（可在 `public/` 目录替换同名文件）。</p>
 
       <div class="grid grid-cols-2 gap-2">
         <button class="rounded-xl border border-stone-300 px-4 py-2" @click="stage='mode'">重新选方案</button>

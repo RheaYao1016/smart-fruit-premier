@@ -12,19 +12,14 @@ export const ASSETS = {
     'https://images.unsplash.com/photo-1585059895524-72359e06133a?auto=format&fit=crop&w=900&q=80'
   ],
   bladeImages: {
-    juice: 'https://images.unsplash.com/photo-1574781330855-d0db8cc6a79c?auto=format&fit=crop&w=1000&q=80',
-    canned: 'https://images.unsplash.com/photo-1578909196400-59f8f8156a05?auto=format&fit=crop&w=1000&q=80',
-    cut: 'https://images.unsplash.com/photo-1514996937319-344454492b37?auto=format&fit=crop&w=1000&q=80'
-  },
-  bladeVideos: {
-    juice: '',
-    canned: '',
-    cut: ''
+    juice: '/刀片图1.png',
+    canned: '/刀片图1.png',
+    cut: '/刀片图1.png'
   },
   bladeGuides: {
-    juice: { type: 'image', url: '/1689125129542740.png' },
-    canned: { type: 'image', url: '/1689125129542740.png' },
-    cut: { type: 'image', url: '/1689125129542740.png' }
+    juice: { type: 'image', url: '/刀片图1.png' },
+    canned: { type: 'image', url: '/刀片图1.png' },
+    cut: { type: 'image', url: '/刀片图1.png' }
   },
   avatars: [
     'https://randomuser.me/api/portraits/men/32.jpg',
