@@ -48,7 +48,9 @@ function logout() {
       >
         <ArrowLeft class="mx-auto h-5 w-5" />
       </button>
-      <div v-else class="h-10 w-10"></div>
+      <div v-else class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-amber-100 bg-white shadow-sm">
+        <img src="/logo1.jpg" alt="智果大师 Logo" class="h-full w-full object-cover opacity-80" />
+      </div>
 
       <div class="text-base font-semibold text-stone-800">{{ title }}</div>
 

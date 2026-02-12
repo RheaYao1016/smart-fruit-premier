@@ -174,6 +174,16 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
+      <div class="rounded-xl border border-amber-100 bg-gradient-to-r from-amber-50 to-orange-50 px-3 py-2">
+        <div class="flex items-center gap-3">
+          <img src="/logo1.jpg" alt="智果大师 Logo" class="h-12 w-12 rounded-lg object-cover opacity-80 shadow-sm" />
+          <div>
+            <p class="text-sm font-semibold text-stone-800">智果大师刀头检查提示</p>
+            <p class="text-xs text-stone-500">先完成摄像头核验，再点击下方操作按钮继续。</p>
+          </div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 gap-2">
         <button class="rounded-xl border border-stone-300 px-4 py-2" @click="stage='mode'">重新选方案</button>
         <button class="rounded-xl bg-amber-500 px-4 py-2 font-semibold text-white" @click="confirmBlade">已检查完成</button>
